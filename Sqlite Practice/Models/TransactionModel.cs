@@ -1,6 +1,6 @@
 ﻿namespace Sqlite_Practice.Models
 {
-    public class Transaction
+    public class TransactionModel
     {
         public long Id { get; set; }
         public string Title { get; set;}

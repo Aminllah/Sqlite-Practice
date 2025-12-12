@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,9 +18,10 @@ namespace Sqlite_Practice.Controller
         {
             _context = context;
         }
-
+        
         [HttpGet("GetAllItems")]
-        public async Task<ActionResult<IEnumerable<TodoItem>>> GetAllItems()
+        [Authorize(Roles ="Admin")]
+        public async Task<ActionResult<IEnumerable<TodoItemModel>>> GetAllItems()
         {
             var Items = await _context.TodoItems.ToListAsync();
             if (Items == null || Items.Count==0)
@@ -30,7 +32,7 @@ namespace Sqlite_Practice.Controller
         }
 
         [HttpPost("AddItem")]
-        public async Task<ActionResult<TodoItem>> AddItem(TodoItem item)
+        public async Task<ActionResult<TodoItemModel>> AddItem(TodoItemModel item)
         {
             if (item == null)
             {
@@ -43,7 +45,7 @@ namespace Sqlite_Practice.Controller
         }
 
         [HttpGet("GetItembyId/{id}")]
-        public async Task<ActionResult<TodoItem>> GetItemById(long id)
+        public async Task<ActionResult<TodoItemModel>> GetItemById(long id)
         {
             var item = await _context.TodoItems.FindAsync(id);
             if (item == null)
@@ -54,7 +56,7 @@ namespace Sqlite_Practice.Controller
         }
 
         [HttpPut("UpdateItem/{id}")]
-        public async Task<ActionResult<TodoItem>> UpdateItem(long id,TodoItem updateditem)
+        public async Task<ActionResult<TodoItemModel>> UpdateItem(long id,TodoItemModel updateditem)
         {
             if(updateditem == null)
             {
@@ -72,7 +74,7 @@ namespace Sqlite_Practice.Controller
         }
 
         [HttpPut("UpdateItemStatus/{id}")]
-        public async Task<ActionResult<TodoItem>> UpdateItemStatus(long id, bool status)
+        public async Task<ActionResult<TodoItemModel>> UpdateItemStatus(long id, bool status)
         {
             
             var item = await _context.TodoItems.FindAsync(id);
@@ -86,7 +88,7 @@ namespace Sqlite_Practice.Controller
             return Ok(item);
         } 
         [HttpDelete("DeleteItem/{id}")]
-        public async Task<ActionResult<TodoItem>> DeleteItem(long id)
+        public async Task<ActionResult<TodoItemModel>> DeleteItem(long id)
         {
             var item =await _context.TodoItems.FindAsync(id);
             if (item == null)
@@ -99,7 +101,7 @@ namespace Sqlite_Practice.Controller
         }
 
         [HttpGet("CompletedItems")]
-        public async Task<ActionResult<IEnumerable<TodoItem>>> GetCompletedItems()
+        public async Task<ActionResult<IEnumerable<TodoItemModel>>> GetCompletedItems()
         {
             var items = await _context.TodoItems
                 .Where(t => t.IsComplete)

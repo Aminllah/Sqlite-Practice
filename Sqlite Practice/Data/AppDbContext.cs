@@ -7,10 +7,10 @@ namespace Sqlite_Practice.Data
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-        public DbSet<TodoItem> TodoItems { get; set; }
+        public DbSet<TodoItemModel> TodoItems { get; set; }
 
-        public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<TransactionModel> Transactions { get; set; }
 
-        public DbSet<User> Users { get; set; }
+        public DbSet<UserModel> Users { get; set; }
     }
 }

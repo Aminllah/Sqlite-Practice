@@ -17,7 +17,7 @@ namespace Sqlite_Practice.Controller
         }
 
         [HttpGet("GetAllTransactions")]
-        public async Task<ActionResult<IEnumerable<Transaction>>> GetAllTransactions()
+        public async Task<ActionResult<IEnumerable<TransactionModel>>> GetAllTransactions()
         {
             var transaction = await _context.Transactions.ToListAsync();
             if (transaction == null || transaction.Count == 0)
@@ -27,7 +27,7 @@ namespace Sqlite_Practice.Controller
             return Ok(transaction);
         }
         [HttpPost("AddTransaction")]
-        public async Task<ActionResult<Transaction>> AddTransaction(Transaction transaction)
+        public async Task<ActionResult<TransactionModel>> AddTransaction(TransactionModel transaction)
         {
             if (transaction == null)
             {
@@ -40,7 +40,7 @@ namespace Sqlite_Practice.Controller
         }
 
         [HttpGet("GetTransactionbyId/{id}")]
-        public async Task<ActionResult<Transaction>> GetTransactionbyId(long id)
+        public async Task<ActionResult<TransactionModel>> GetTransactionbyId(long id)
         {
             var transaction = await _context.Transactions.FindAsync(id);
             if (transaction == null)
@@ -51,7 +51,7 @@ namespace Sqlite_Practice.Controller
         }
 
         [HttpPut("UpdateTransaction/{id}")]
-        public async Task<ActionResult<Transaction>> UpdateTransaction(long id, Transaction updatedTransaction)
+        public async Task<ActionResult<TransactionModel>> UpdateTransaction(long id, TransactionModel updatedTransaction)
         {
             if (updatedTransaction == null)
             {
@@ -72,7 +72,7 @@ namespace Sqlite_Practice.Controller
         }
 
         [HttpDelete("Deletetransaction/{id}")]
-        public async Task<ActionResult<TodoItem>> Deletetransaction(long id)
+        public async Task<ActionResult<TodoItemModel>> Deletetransaction(long id)
         {
             var transaction = await _context.Transactions.FindAsync(id);
             if (transaction == null)
@@ -114,7 +114,7 @@ namespace Sqlite_Practice.Controller
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactions(
+        public async Task<ActionResult<IEnumerable<TransactionModel>>> GetTransactions(
         string? type, string? category, string? sortBy = "date")
         {
             var query = _context.Transactions.AsQueryable();
@@ -125,7 +125,7 @@ namespace Sqlite_Practice.Controller
             if (!string.IsNullOrEmpty(category))
                 query = query.Where(t => t.Category == category);
 
-            query = sortBy.ToLower() switch
+            query = sortBy?.ToLower() switch
             {
                 "amount" => query.OrderBy(t => t.Amount),
                 _ => query.OrderBy(t => t.Date)
@@ -136,7 +136,7 @@ namespace Sqlite_Practice.Controller
         }
 
         [HttpGet("GetMonthlyTotalsGroupedByCategory")]
-        public async Task<ActionResult<Transaction>> GetMonthlyTotalsGroupedByCategory(int month, int year)
+        public async Task<ActionResult<TransactionModel>> GetMonthlyTotalsGroupedByCategory(int month, int year)
         {
             var transactions = await _context.Transactions
                 .Where(t => t.Date.Month == month && t.Date.Year == year)
