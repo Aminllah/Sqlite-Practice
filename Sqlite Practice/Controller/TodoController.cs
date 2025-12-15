@@ -4,110 +4,45 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sqlite_Practice.Data;
+using Sqlite_Practice.DTO;
 using Sqlite_Practice.Models;
+using Sqlite_Practice.Services;
 
 namespace Sqlite_Practice.Controller
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/todos")]
     public class TodoController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly ITodoService _todoService;
 
-        public TodoController(AppDbContext context)
+        public TodoController(ITodoService todoService)
         {
-            _context = context;
-        }
-        
-        [HttpGet("GetAllItems")]
-        [Authorize(Roles ="Admin")]
-        public async Task<ActionResult<IEnumerable<TodoItemModel>>> GetAllItems()
-        {
-            var Items = await _context.TodoItems.ToListAsync();
-            if (Items == null || Items.Count==0)
-            {
-                return NotFound("No item Available");
-            }
-            return Ok(Items);
+            _todoService = todoService;
         }
 
-        [HttpPost("AddItem")]
-        public async Task<ActionResult<TodoItemModel>> AddItem(TodoItemModel item)
-        {
-            if (item == null)
-            {
-                return BadRequest("No data has been Entered");
-            }
-            _context.TodoItems.Add(item);
-            await _context.SaveChangesAsync();
-            return Ok(item);
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+            => Ok(await _todoService.GetAllAsync());
 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(long id)
+        {
+            var item = await _todoService.GetByIdAsync(id);
+            return item == null ? NotFound() : Ok(item);
         }
 
-        [HttpGet("GetItembyId/{id}")]
-        public async Task<ActionResult<TodoItemModel>> GetItemById(long id)
-        {
-            var item = await _context.TodoItems.FindAsync(id);
-            if (item == null)
-            {
-                return NotFound("No Item Found with this Id");
-            }
-            return item;
-        }
+        [HttpPost]
+        public async Task<IActionResult> Create(CreateTodoDto dto)
+            => Ok(await _todoService.CreateAsync(dto));
 
-        [HttpPut("UpdateItem/{id}")]
-        public async Task<ActionResult<TodoItemModel>> UpdateItem(long id,TodoItemModel updateditem)
-        {
-            if(updateditem == null)
-            {
-                return BadRequest();
-            }
-            var item = await _context.TodoItems.FindAsync(id);
-            if (item == null)
-            {
-                return NotFound("No Item Found with this Id");
-            }
-            item.Name = updateditem.Name;
-            item.IsComplete = updateditem.IsComplete;
-            await _context.SaveChangesAsync();
-            return Ok(item);
-        }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(long id, UpdateToDoDTO dto)
+            => await _todoService.UpdateAsync(id, dto) ? NoContent() : NotFound();
 
-        [HttpPut("UpdateItemStatus/{id}")]
-        public async Task<ActionResult<TodoItemModel>> UpdateItemStatus(long id, bool status)
-        {
-            
-            var item = await _context.TodoItems.FindAsync(id);
-            if (item == null)
-            {
-                return NotFound("No Item Found with this Id");
-            }
-            
-            item.IsComplete = status;
-            await _context.SaveChangesAsync();
-            return Ok(item);
-        } 
-        [HttpDelete("DeleteItem/{id}")]
-        public async Task<ActionResult<TodoItemModel>> DeleteItem(long id)
-        {
-            var item =await _context.TodoItems.FindAsync(id);
-            if (item == null)
-            {
-                return NotFound("No Item Found with this Id");
-            }
-            _context.TodoItems.Remove(item);
-            await _context.SaveChangesAsync();
-            return Ok("Item Deleted Successfully");
-        }
-
-        [HttpGet("CompletedItems")]
-        public async Task<ActionResult<IEnumerable<TodoItemModel>>> GetCompletedItems()
-        {
-            var items = await _context.TodoItems
-                .Where(t => t.IsComplete)
-                .ToListAsync();
-            return items.Any() ? Ok(items) : NotFound("No completed items found.");
-        }
-
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(long id)
+            => await _todoService.DeleteAsync(id) ? NoContent() : NotFound();
     }
+
 }
